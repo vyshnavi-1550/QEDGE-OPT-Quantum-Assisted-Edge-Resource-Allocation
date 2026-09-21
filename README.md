@@ -1,6 +1,6 @@
 # QEDGE-OPT: Quantum-Assisted Edge Resource Allocation
 
-**Capstone Project — 7th & 8th Semester**
+**Capstone Project **
 Domain: Quantum Computing / Edge Computing / Optimization
 
 ## Problem
