@@ -1,15 +1,14 @@
 """
 demo.py
 --------
-Presentation-friendly demo of the QEDGE-OPT "initial working module"
-for Review 1.
+Presentation-friendly demo of the QEDGE-OPT working modules.
 
 What it does:
     1. Generates a synthetic scenario (tasks + edge servers)
     2. Shows the problem clearly in table form
-    3. Runs Simulated Annealing to solve it
-    4. Compares a random (naive) assignment vs. the optimized assignment
-    5. Saves a chart showing how the solution improves as the algorithm runs
+    3. Runs Simulated Annealing (SA) and the Genetic Algorithm (GA) to solve it
+    4. Compares random (naive) vs. SA vs. GA assignments
+    5. Saves charts showing how each solution improves as the algorithm runs
 
 Run this with:  python3 demo.py
 """
@@ -24,6 +23,7 @@ from simulated_annealing_solver import (
     cost_of_assignment,
     random_assignment,
 )
+from genetic_algorithm_solver import genetic_algorithm
 
 
 def print_table(headers, rows):
@@ -38,7 +38,7 @@ def print_table(headers, rows):
 
 def main():
     print("=" * 60)
-    print("QEDGE-OPT — Review 1 Demo: Simulated Annealing Baseline")
+    print("QEDGE-OPT — Demo: Simulated Annealing vs Genetic Algorithm")
     print("=" * 60)
 
     scenario = generate_scenario(num_tasks=10, num_servers=3, seed=42)
@@ -61,31 +61,43 @@ def main():
     naive = random_assignment(tasks, servers)
     naive_cost = cost_of_assignment(naive, tasks, servers)
 
-    # Optimized: simulated annealing result
-    best_assignment, best_cost, history = simulated_annealing(tasks, servers, seed=1)
+    # Simulated Annealing
+    sa_assignment, sa_cost, sa_history = simulated_annealing(tasks, servers, seed=1)
 
-    print("\n--- RESULT: NAIVE (RANDOM) VS OPTIMIZED (SIMULATED ANNEALING) ---")
+    # Genetic Algorithm
+    ga_assignment, ga_cost, ga_history = genetic_algorithm(tasks, servers, seed=1)
+
+    print("\n--- RESULT: NAIVE VS SIMULATED ANNEALING VS GENETIC ALGORITHM ---")
     print_table(
         ["Method", "Total Cost (lower = better)"],
         [
             ["Random assignment", f"{naive_cost:.2f}"],
-            ["Simulated Annealing", f"{best_cost:.2f}"],
+            ["Simulated Annealing", f"{sa_cost:.2f}"],
+            ["Genetic Algorithm", f"{ga_cost:.2f}"],
         ],
     )
-    improvement = (1 - best_cost / naive_cost) * 100 if naive_cost else 0
-    print(f"\nImprovement over naive baseline: {improvement:.1f}% lower cost")
+    sa_improvement = (1 - sa_cost / naive_cost) * 100 if naive_cost else 0
+    ga_improvement = (1 - ga_cost / naive_cost) * 100 if naive_cost else 0
+    print(f"\nSA improvement over naive baseline: {sa_improvement:.1f}% lower cost")
+    print(f"GA improvement over naive baseline: {ga_improvement:.1f}% lower cost")
 
-    print("\n--- FINAL TASK -> SERVER ASSIGNMENT ---")
+    print("\n--- FINAL TASK -> SERVER ASSIGNMENT (Simulated Annealing) ---")
     print_table(
         ["Task ID", "Assigned Server"],
-        [[task_id, server_id] for task_id, server_id in best_assignment.items()],
+        [[task_id, server_id] for task_id, server_id in sa_assignment.items()],
     )
 
-    # Save a chart showing cost improving over the annealing process
-    temps = [h[0] for h in history]
-    costs = [h[1] for h in history]
+    print("\n--- FINAL TASK -> SERVER ASSIGNMENT (Genetic Algorithm) ---")
+    print_table(
+        ["Task ID", "Assigned Server"],
+        [[task_id, server_id] for task_id, server_id in ga_assignment.items()],
+    )
+
+    # Chart 1: SA cost improving over the annealing process
+    sa_steps = [h[0] for h in sa_history]
+    sa_costs = [h[1] for h in sa_history]
     plt.figure(figsize=(8, 5))
-    plt.plot(range(len(costs)), costs, color="#1F4E78", linewidth=2)
+    plt.plot(range(len(sa_costs)), sa_costs, color="#1F4E78", linewidth=2)
     plt.xlabel("Cooling step")
     plt.ylabel("Best cost found so far")
     plt.title("Simulated Annealing: Cost Improving Over Time")
@@ -93,6 +105,31 @@ def main():
     plt.tight_layout()
     plt.savefig("annealing_progress.png", dpi=150)
     print("\nChart saved as annealing_progress.png (use this in your PPT)")
+
+    # Chart 2: GA cost improving over generations
+    ga_gens = [h[0] for h in ga_history]
+    ga_costs = [h[1] for h in ga_history]
+    plt.figure(figsize=(8, 5))
+    plt.plot(ga_gens, ga_costs, color="#8E44AD", linewidth=2)
+    plt.xlabel("Generation")
+    plt.ylabel("Best cost found so far")
+    plt.title("Genetic Algorithm: Cost Improving Over Time")
+    plt.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("ga_progress.png", dpi=150)
+    print("Chart saved as ga_progress.png (use this in your PPT)")
+
+    # Chart 3: side-by-side bar comparison of all three methods
+    plt.figure(figsize=(6, 5))
+    methods = ["Random", "Simulated\nAnnealing", "Genetic\nAlgorithm"]
+    values = [naive_cost, sa_cost, ga_cost]
+    colors = ["#B0B0B0", "#1F4E78", "#8E44AD"]
+    plt.bar(methods, values, color=colors)
+    plt.ylabel("Total Cost (lower = better)")
+    plt.title("Method Comparison: Total Cost")
+    plt.tight_layout()
+    plt.savefig("method_comparison.png", dpi=150)
+    print("Chart saved as method_comparison.png (use this in your PPT)")
 
 
 if __name__ == "__main__":

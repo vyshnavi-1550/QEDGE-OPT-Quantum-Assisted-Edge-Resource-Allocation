@@ -1,0 +1,71 @@
+{
+  "tasks": [
+    {
+      "id": "T1",
+      "size": 25,
+      "latency_requirement": 2
+    },
+    {
+      "id": "T2",
+      "size": 5,
+      "latency_requirement": 5
+    },
+    {
+      "id": "T3",
+      "size": 12,
+      "latency_requirement": 4
+    },
+    {
+      "id": "T4",
+      "size": 9,
+      "latency_requirement": 2
+    },
+    {
+      "id": "T5",
+      "size": 26,
+      "latency_requirement": 9
+    },
+    {
+      "id": "T6",
+      "size": 7,
+      "latency_requirement": 10
+    },
+    {
+      "id": "T7",
+      "size": 18,
+      "latency_requirement": 1
+    },
+    {
+      "id": "T8",
+      "size": 5,
+      "latency_requirement": 2
+    },
+    {
+      "id": "T9",
+      "size": 11,
+      "latency_requirement": 4
+    },
+    {
+      "id": "T10",
+      "size": 21,
+      "latency_requirement": 10
+    }
+  ],
+  "servers": [
+    {
+      "id": "S1",
+      "capacity": 42,
+      "energy_cost_per_unit": 0.93
+    },
+    {
+      "id": "S2",
+      "capacity": 49,
+      "energy_cost_per_unit": 1.94
+    },
+    {
+      "id": "S3",
+      "capacity": 63,
+      "energy_cost_per_unit": 1.51
+    }
+  ]
+}
