@@ -11,32 +11,36 @@ problem. This project builds and fairly benchmarks four solvers for this
 problem: Simulated Annealing, Genetic Algorithm, NSGA-II (all classical),
 and QAOA (quantum-assisted, via Qiskit).
 
-## Status: Post-Review 1, pre-Review 2 (~45% implementation)
+## Status: Review 2 — 60% implementation
 
-Currently implemented:
+All four planned solvers are implemented, tested, and compared:
 - `data_generator.py` — generates synthetic tasks and edge servers
 - `simulated_annealing_solver.py` — classical baseline solver
-- `genetic_algorithm_solver.py` — second classical solver, using tournament
-  selection, single-point crossover, and mutation
+- `genetic_algorithm_solver.py` — second classical solver (tournament
+  selection, single-point crossover, mutation)
 - `nsga2_solver.py` — multi-objective classical solver (cost + latency
   violation), using non-dominated sorting and crowding distance
-- `demo.py` — runnable demo comparing random vs. SA vs. GA vs. NSGA-II
-  assignments, with result charts
+- `qubo_formulation.py` — QUBO formulation of the assignment problem,
+  built with Qiskit Optimization (constraints converted to penalty terms
+  + binary-encoded slack variables automatically)
+- `qaoa_solver.py` — QAOA solver, run on a local Qiskit simulator
+- `demo.py` — runnable demo comparing all four solvers, with result charts
 
 ### How to run the demo
 
 ```bash
-pip install matplotlib
+pip install matplotlib qiskit qiskit-optimization qiskit-algorithms
 python3 demo.py
 ```
 
-This prints the generated tasks/servers, the naive vs. SA vs. GA vs. NSGA-II
-comparison, the final task-to-server assignments, and saves five charts:
+Prints the full SA/GA/NSGA-II comparison on the 10-task scenario, then the
+QAOA-vs-exact comparison on a smaller scenario, and saves six charts:
 - `annealing_progress.png` — SA cost decreasing over the annealing process
 - `ga_progress.png` — GA cost decreasing over generations
 - `nsga2_progress.png` — NSGA-II best cost in the Pareto front over generations
 - `nsga2_pareto.png` — NSGA-II's final Pareto front (cost vs. latency violation)
-- `method_comparison.png` — bar chart comparing cost across all methods
+- `method_comparison.png` — bar chart comparing SA/GA/NSGA-II cost
+- `qaoa_comparison.png` — bar chart comparing QAOA vs. exact solution
 
 ### Simulated Annealing (SA) Solver
 
@@ -54,18 +58,50 @@ so results are directly comparable.
 ### NSGA-II Solver
 
 A multi-objective solver extending GA to optimize **two** objectives at
-once:
-1. **Total cost** — the same `cost_of_assignment()` used by SA and GA
-2. **Latency violation** — how much each task's assigned server's
-   estimated latency (modeled as increasing with server load/congestion)
-   exceeds that task's `latency_requirement`, summed across all tasks
+once: total cost, and latency violation (how much each task's assigned
+server's estimated latency, modeled as increasing with server load, exceeds
+that task's `latency_requirement`). Uses fast non-dominated sorting and
+crowding distance to maintain a diverse Pareto front of trade-off
+solutions, plus a "best compromise" pick for direct comparison against
+SA/GA's single-number results.
 
-Uses fast non-dominated sorting and crowding distance to maintain a diverse
-Pareto front of trade-off solutions, rather than a single answer. A "best
-compromise" pick (lowest cost among zero-violation solutions) is reported
-for direct comparison against SA/GA's single-number results.
+### QUBO Formulation
 
-**Results on the standard test scenario (10 tasks, 3 servers, seed=42):**
+Expresses the assignment problem as a Quadratic Unconstrained Binary
+Optimization model — the format QAOA requires. Uses Qiskit Optimization's
+`QuadraticProgramToQubo` to automatically convert the assignment and
+capacity constraints into penalty terms (with binary-encoded slack
+variables for the capacity inequality), rather than hand-deriving the
+expansion. Verified correct: the QUBO's exact classical solution matches
+`cost_of_assignment()`'s output exactly on a test scenario.
+
+### QAOA Solver
+
+Runs on a **local Qiskit simulator** (no IBM Quantum account needed).
+Important scoping note: the full capacity-constrained QUBO needs 20+
+qubits for the real 10-task scenario, which is too large to simulate
+quickly. Measured on this project's own hardware:
+
+| Qubits | QAOA runtime (local simulator) |
+|---|---|
+| 4 | ~0.6s |
+| 6 | ~2.8s |
+| 12 | did not finish in 60+ seconds |
+
+This is a genuine, reportable characteristic of NISQ-era variational
+algorithms, not a bug. QAOA is therefore run on a smaller, assignment-only
+scenario (3 tasks, 2 servers, 6 qubits) and compared against an **exact
+classical solver** on the same reduced problem for a fair ground-truth
+check.
+
+**Result:** QAOA matched the exact optimal solution exactly — **0.0%
+optimality gap** — reproducibly, once both the simulator's randomness and
+QAOA's initial circuit parameters are seeded (without a fixed initial
+point, QAOA's optimizer can converge to different local optima on
+different runs — another real, observed property of variational quantum
+algorithms worth noting in the report).
+
+**Results on the standard 10-task test scenario (seed=42):**
 
 | Method | Total Cost (lower = better) | Latency Violation (lower = better) | Cost Improvement over Random |
 |---|---|---|---|
@@ -74,27 +110,22 @@ for direct comparison against SA/GA's single-number results.
 | Genetic Algorithm | 200.15 | not optimized | 51.0% |
 | NSGA-II (best compromise) | 200.15 | 11.55 | 51.0% |
 
-NSGA-II's best-compromise solution matches GA's cost exactly, while also
-reducing latency violation by ~13% versus random — a genuine multi-objective
-improvement that single-objective SA and GA don't account for. The final
-Pareto front contains dozens of trade-off solutions ranging from low-cost/
-higher-violation to higher-cost/lower-violation, giving a full picture of
-the cost-latency trade-off space rather than one fixed answer.
+**QAOA results on a small 3-task scenario:**
 
-Run it standalone with:
-```bash
-python3 nsga2_solver.py
-```
+| Method | Cost | Runtime |
+|---|---|---|
+| Random assignment | 76.43 | — |
+| QAOA (local simulator) | 39.06 | ~4-6s |
+| Exact (ground truth) | 39.06 | ~0.01s |
 
-## Planned (Review 2 & 3)
+## Planned (Review 3)
 
-- QUBO formulation of the problem
-- QAOA solver (Qiskit)
-- Full benchmarking across all four solvers (objective value, runtime,
-  constraint violations, scalability, noise sensitivity)
+- Full benchmarking across all four solvers on identical scaled instances
+  (objective value, runtime, constraint violations, scalability)
 - Streamlit comparison dashboard
 - Validation on the Alibaba Cluster Trace v2017 (fully real task-and-server
-  data) — planned for Review 3 / final results
+  data) for final results / paper submission
+- IEEE paper submission
 
 ## Team
 
@@ -102,4 +133,5 @@ python3 nsga2_solver.py
 
 ## Tech Stack
 
-Python, Qiskit, OR-Tools, SimPy, NumPy, Pandas, Streamlit, DEAP/pymoo.
+Python, Qiskit, Qiskit Optimization, OR-Tools, SimPy, NumPy, Pandas,
+Streamlit, DEAP/pymoo.
