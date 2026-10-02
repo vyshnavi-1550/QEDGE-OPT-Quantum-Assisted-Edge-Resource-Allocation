@@ -20,7 +20,8 @@ What is derived / synthetic (state this in the paper):
     - latency_requirement: rank-based from demand, integer 1-10
       (heavier tasks get stricter deadlines)
     - server capacity is scaled so total capacity = CAPACITY_HEADROOM x
-      total task demand, so the capacity constraint actually binds
+      total task demand, so the capacity constraint actually binds, with a
+      floor so every server can hold the largest single task
     - energy_cost_per_unit: evenly spread between 0.5 and 2.0
 """
 
@@ -177,10 +178,15 @@ def load_alibaba_scenario(num_tasks=10, num_servers=3, seed=SEED,
     total_demand = sum(t["size"] for t in tasks)
     total_raw = sum(s["raw_cpu_capacity"] for s in raw_servers)
 
+    # Floor: every server can hold at least the largest single task, so a
+    # task never exceeds every server by itself (matters for tiny instances).
+    max_task_size = max(t["size"] for t in tasks)
+
     servers = []
     for i, s in enumerate(raw_servers):
         share = s["raw_cpu_capacity"] / total_raw
         capacity = int(math.ceil(capacity_headroom * total_demand * share))
+        capacity = max(capacity, max_task_size)
 
         if num_servers > 1:
             energy = 0.5 + 1.5 * i / (num_servers - 1)

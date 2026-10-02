@@ -1,0 +1,61 @@
+data,num_tasks,num_servers,seed,optimum_overflow,method,repaired_gap_pct,repaired_overflow,hit_optimum
+synthetic,2,2,1,0,QAOA,0.0,0,1
+synthetic,2,2,1,0,Exact-QUBO,0.0,0,1
+synthetic,2,2,1,0,Cheapest-server,0.0,0,1
+synthetic,2,2,1,0,Random (mean),0.0,0,1.0
+synthetic,2,2,2,0,QAOA,0.0,0,1
+synthetic,2,2,2,0,Exact-QUBO,0.0,0,1
+synthetic,2,2,2,0,Cheapest-server,0.0,0,1
+synthetic,2,2,2,0,Random (mean),0.54,0,0.75
+synthetic,2,2,3,0,QAOA,0.0,0,1
+synthetic,2,2,3,0,Exact-QUBO,0.0,0,1
+synthetic,2,2,3,0,Cheapest-server,0.0,0,1
+synthetic,2,2,3,0,Random (mean),1.52,0,0.8
+synthetic,2,2,4,0,QAOA,0.0,0,1
+synthetic,2,2,4,0,Exact-QUBO,0.0,0,1
+synthetic,2,2,4,0,Cheapest-server,0.0,0,1
+synthetic,2,2,4,0,Random (mean),2.69,0,0.8
+synthetic,2,2,5,0,QAOA,0.0,0,1
+synthetic,2,2,5,0,Exact-QUBO,0.0,0,1
+synthetic,2,2,5,0,Cheapest-server,0.0,0,1
+synthetic,2,2,5,0,Random (mean),0.08,0,0.8
+synthetic,3,2,1,0,QAOA,15.39,0,0
+synthetic,3,2,1,0,Exact-QUBO,15.39,0,0
+synthetic,3,2,1,0,Cheapest-server,15.39,0,0
+synthetic,3,2,1,0,Random (mean),13.37,0,0.55
+synthetic,3,2,2,0,QAOA,0.0,0,1
+synthetic,3,2,2,0,Exact-QUBO,0.0,0,1
+synthetic,3,2,2,0,Cheapest-server,0.0,0,1
+synthetic,3,2,2,0,Random (mean),7.43,0,0.15
+synthetic,3,2,3,0,QAOA,0.0,0,1
+synthetic,3,2,3,0,Exact-QUBO,0.0,0,1
+synthetic,3,2,3,0,Cheapest-server,0.0,0,1
+synthetic,3,2,3,0,Random (mean),3.84,0,0.2
+synthetic,3,2,4,0,QAOA,0.0,0,1
+synthetic,3,2,4,0,Exact-QUBO,0.0,0,1
+synthetic,3,2,4,0,Cheapest-server,0.0,0,1
+synthetic,3,2,4,0,Random (mean),8.55,0,0.5
+synthetic,3,2,5,0,QAOA,0.0,0,1
+synthetic,3,2,5,0,Exact-QUBO,0.0,0,1
+synthetic,3,2,5,0,Cheapest-server,0.0,0,1
+synthetic,3,2,5,0,Random (mean),1.16,0,0.2
+synthetic,4,2,1,0,QAOA,8.05,0,0
+synthetic,4,2,1,0,Exact-QUBO,8.05,0,0
+synthetic,4,2,1,0,Cheapest-server,8.05,0,0
+synthetic,4,2,1,0,Random (mean),10.0,0,0.3
+synthetic,4,2,2,0,QAOA,0.0,0,1
+synthetic,4,2,2,0,Exact-QUBO,0.0,0,1
+synthetic,4,2,2,0,Cheapest-server,0.0,0,1
+synthetic,4,2,2,0,Random (mean),3.26,0,0.3
+synthetic,4,2,3,0,QAOA,2.19,0,0
+synthetic,4,2,3,0,Exact-QUBO,2.19,0,0
+synthetic,4,2,3,0,Cheapest-server,2.19,0,0
+synthetic,4,2,3,0,Random (mean),2.77,0,0.25
+synthetic,4,2,4,0,QAOA,4.76,0,0
+synthetic,4,2,4,0,Exact-QUBO,0.0,0,1
+synthetic,4,2,4,0,Cheapest-server,0.0,0,1
+synthetic,4,2,4,0,Random (mean),9.67,0,0.1
+synthetic,4,2,5,0,QAOA,0.0,0,1
+synthetic,4,2,5,0,Exact-QUBO,0.0,0,1
+synthetic,4,2,5,0,Cheapest-server,0.0,0,1
+synthetic,4,2,5,0,Random (mean),0.95,0,0.05

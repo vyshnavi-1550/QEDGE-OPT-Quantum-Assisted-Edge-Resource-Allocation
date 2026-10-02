@@ -1,4 +1,4 @@
 data,num_tasks,num_servers,qubits,gap_own_problem_pct,qaoa_cost,qaoa_capacity_overflow,gap_real_world_pct,repaired_cost,repaired_overflow,gap_repaired_pct,optimal_cost,qaoa_runtime_s,exact_runtime_s
-alibaba,2,2,4,0.0,517.5,10,88.18,275.0,5,0.0,275.0,1.008,0.00522
-alibaba,3,2,6,28.3,534.0,10,898.13,61.0,0,14.02,53.5,3.802,0.00534
-alibaba,4,2,8,0.0,930.0,18,1531.58,57.0,0,0.0,57.0,20.02,0.00675
+alibaba,2,2,4,0.0,267.5,5,970.0,25.0,0,0.0,25.0,2.14,0.00559
+alibaba,3,2,6,28.3,534.0,10,898.13,61.0,0,14.02,53.5,5.268,0.00453
+alibaba,4,2,8,0.0,930.0,18,1531.58,57.0,0,0.0,57.0,24.69,0.00756

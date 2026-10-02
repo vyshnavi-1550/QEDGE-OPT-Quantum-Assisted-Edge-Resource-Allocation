@@ -1,0 +1,61 @@
+data,num_tasks,num_servers,seed,optimum_overflow,method,repaired_gap_pct,repaired_overflow,hit_optimum
+alibaba,2,2,1,0,QAOA,0.0,0,1
+alibaba,2,2,1,0,Exact-QUBO,0.0,0,1
+alibaba,2,2,1,0,Cheapest-server,0.0,0,1
+alibaba,2,2,1,0,Random (mean),37.5,0,0.75
+alibaba,2,2,2,0,QAOA,0.0,0,1
+alibaba,2,2,2,0,Exact-QUBO,0.0,0,1
+alibaba,2,2,2,0,Cheapest-server,0.0,0,1
+alibaba,2,2,2,0,Random (mean),37.5,0,0.75
+alibaba,2,2,3,0,QAOA,0.0,0,1
+alibaba,2,2,3,0,Exact-QUBO,0.0,0,1
+alibaba,2,2,3,0,Cheapest-server,0.0,0,1
+alibaba,2,2,3,0,Random (mean),0.0,0,1.0
+alibaba,2,2,4,0,QAOA,0.0,0,1
+alibaba,2,2,4,0,Exact-QUBO,0.0,0,1
+alibaba,2,2,4,0,Cheapest-server,0.0,0,1
+alibaba,2,2,4,0,Random (mean),60.0,0,0.6
+alibaba,2,2,5,0,QAOA,0.0,0,1
+alibaba,2,2,5,0,Exact-QUBO,0.0,0,1
+alibaba,2,2,5,0,Cheapest-server,0.0,0,1
+alibaba,2,2,5,0,Random (mean),30.0,0,0.8
+alibaba,3,2,1,0,QAOA,62.2,0,0
+alibaba,3,2,1,0,Exact-QUBO,62.2,0,0
+alibaba,3,2,1,0,Cheapest-server,62.2,0,0
+alibaba,3,2,1,0,Random (mean),37.32,0,0.4
+alibaba,3,2,2,0,QAOA,0.0,0,1
+alibaba,3,2,2,0,Exact-QUBO,0.0,0,1
+alibaba,3,2,2,0,Cheapest-server,0.0,0,1
+alibaba,3,2,2,0,Random (mean),11.93,0,0.3
+alibaba,3,2,3,0,QAOA,0.0,0,1
+alibaba,3,2,3,0,Exact-QUBO,0.0,0,1
+alibaba,3,2,3,0,Cheapest-server,0.0,0,1
+alibaba,3,2,3,0,Random (mean),32.5,0,0.35
+alibaba,3,2,4,0,QAOA,85.71,0,0
+alibaba,3,2,4,0,Exact-QUBO,85.71,0,0
+alibaba,3,2,4,0,Cheapest-server,85.71,0,0
+alibaba,3,2,4,0,Random (mean),51.43,0,0.4
+alibaba,3,2,5,0,QAOA,0.0,0,1
+alibaba,3,2,5,0,Exact-QUBO,0.0,0,1
+alibaba,3,2,5,0,Cheapest-server,0.0,0,1
+alibaba,3,2,5,0,Random (mean),18.78,0,0.35
+alibaba,4,2,1,0,QAOA,0.0,0,1
+alibaba,4,2,1,0,Exact-QUBO,0.0,0,1
+alibaba,4,2,1,0,Cheapest-server,0.0,0,1
+alibaba,4,2,1,0,Random (mean),23.17,0,0.15
+alibaba,4,2,2,0,QAOA,0.0,0,1
+alibaba,4,2,2,0,Exact-QUBO,0.0,0,1
+alibaba,4,2,2,0,Cheapest-server,0.0,0,1
+alibaba,4,2,2,0,Random (mean),18.3,0,0.1
+alibaba,4,2,3,0,QAOA,0.0,0,1
+alibaba,4,2,3,0,Exact-QUBO,50.0,0,0
+alibaba,4,2,3,0,Cheapest-server,50.0,0,0
+alibaba,4,2,3,0,Random (mean),12.5,0,0.75
+alibaba,4,2,4,0,QAOA,47.37,0,0
+alibaba,4,2,4,0,Exact-QUBO,47.37,0,0
+alibaba,4,2,4,0,Cheapest-server,47.37,0,0
+alibaba,4,2,4,0,Random (mean),41.05,0,0.2
+alibaba,4,2,5,0,QAOA,0.0,0,1
+alibaba,4,2,5,0,Exact-QUBO,0.0,0,1
+alibaba,4,2,5,0,Cheapest-server,0.0,0,1
+alibaba,4,2,5,0,Random (mean),18.08,0,0.4
