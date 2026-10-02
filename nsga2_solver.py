@@ -15,6 +15,11 @@ Extends the single-objective GA to TWO objectives, both minimized:
 Returns a Pareto front (the set of non-dominated trade-off solutions) plus a
 single "best compromise" pick for easy comparison against SA/GA's single number.
 
+Best-compromise rule: restrict to capacity-feasible solutions first, then take
+the lowest-cost solution with zero latency violation; if none has zero
+violation, take the lowest-cost capacity-feasible solution. Only if no
+capacity-feasible solution exists does it fall back to the whole front.
+
 Usage:
     from data_generator import generate_scenario
     from nsga2_solver import nsga2
@@ -59,6 +64,15 @@ def latency_violation(assignment, tasks, servers):
         if est_latency > required:
             violation += est_latency - required
     return violation
+
+
+def _capacity_overflow(assignment, tasks, servers):
+    """Total compute units placed beyond server capacity (0 = feasible)."""
+    size = {t["id"]: t["size"] for t in tasks}
+    load = {s["id"]: 0 for s in servers}
+    for task_id, server_id in assignment.items():
+        load[server_id] += size[task_id]
+    return sum(max(0, load[s["id"]] - s["capacity"]) for s in servers)
 
 
 def _objectives(individual, tasks, servers):
@@ -230,10 +244,15 @@ def nsga2(
         cost, violation = final_objectives[i]
         pareto_front.append({"assignment": assignment, "cost": cost, "latency_violation": violation})
 
-    # "Best compromise": lowest cost among zero-violation solutions;
-    # falls back to lowest cost overall if none are fully feasible.
-    feasible = [p for p in pareto_front if p["latency_violation"] == 0]
-    pool = feasible if feasible else pareto_front
+    # "Best compromise": restrict to capacity-feasible solutions first, then
+    # take the lowest cost among zero-latency-violation solutions; if none
+    # have zero violation, take the lowest cost among capacity-feasible ones.
+    # Falls back to the whole front only if nothing is capacity-feasible.
+    cap_ok = [p for p in pareto_front
+              if _capacity_overflow(p["assignment"], tasks, servers) == 0]
+    base = cap_ok if cap_ok else pareto_front
+    feasible = [p for p in base if p["latency_violation"] == 0]
+    pool = feasible if feasible else base
     best = min(pool, key=lambda p: p["cost"])
 
     return pareto_front, best["assignment"], best["cost"], best["latency_violation"], history
