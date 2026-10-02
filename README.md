@@ -12,7 +12,7 @@ Genetic Algorithm, NSGA-II (all classical), QAOA (quantum-assisted, via Qiskit),
 and an exact MILP solver (HiGHS via SciPy) used as a ground-truth optimality
 baseline.
 
-## Status: Review 2, about 85% implementation
+## Status: Review 2, about 95% implementation
 
 Implemented, tested, and benchmarked:
 
@@ -30,16 +30,21 @@ Implemented, tested, and benchmarked:
   cheapest-server and random baselines
 - `exact_baseline.py`: exact MILP baseline (SciPy/HiGHS) for optimality gaps
 - `run_benchmark.py`: multi-size benchmark (cost, violations, runtime, scalability)
+- `app.py`: Streamlit dashboard that reads the result CSVs and charts
 - `demo.py`: runnable demo comparing the solvers, with result charts
 
 ## How to run
 
 ```bash
-pip install matplotlib qiskit qiskit-optimization qiskit-algorithms scipy
-python3 demo.py              # demo + charts
-python3 run_benchmark.py     # multi-size benchmark, writes CSV results and charts
-python3 exact_baseline.py    # exact MILP baseline, writes exact_gap_*_scipy.csv
+pip install matplotlib qiskit qiskit-optimization qiskit-algorithms scipy streamlit pandas
+python3 demo.py                  # demo + charts
+python3 run_benchmark.py         # multi-size benchmark, writes CSV results and charts
+python3 exact_baseline.py        # exact MILP baseline, writes exact_gap_*_scipy.csv
+python3 -m streamlit run app.py  # comparison dashboard (opens in browser)
 ```
+
+On Windows, if `pip` or `streamlit` is not recognized, use
+`python -m pip install ...` and `python -m streamlit run app.py`.
 
 `demo.py` prints the SA/GA/NSGA-II comparison on the 10-task scenario, then the
 QAOA-vs-exact comparison on a smaller scenario, and saves six charts:
@@ -50,6 +55,13 @@ QAOA-vs-exact comparison on a smaller scenario, and saves six charts:
 - `nsga2_pareto.png`: NSGA-II's final Pareto front (cost vs. latency violation)
 - `method_comparison.png`: bar chart comparing SA/GA/NSGA-II cost
 - `qaoa_comparison.png`: bar chart comparing QAOA vs. exact solution
+
+## Dashboard
+
+`app.py` is a Streamlit app with six tabs: Overview, Optimality gap, QAOA, QAOA
+control, Charts, and Raw data. It reads the CSV and PNG files produced by the
+scripts above (it does not re-run the solvers), so run the benchmark scripts
+first if a tab reports a missing file.
 
 ## Result files
 
@@ -161,7 +173,6 @@ The exact solver takes under 0.01 s on each of these instances.
 ## Remaining work (before Review 3)
 
 - Noise sensitivity analysis for QAOA (Qiskit noise model)
-- Streamlit comparison dashboard
 - IEEE-style conference paper
 
 ## Team
@@ -171,4 +182,4 @@ The exact solver takes under 0.01 s on each of these instances.
 ## Tech Stack
 
 Python, Qiskit, Qiskit Optimization, SciPy (HiGHS), OR-Tools (optional), NumPy,
-Pandas, Matplotlib, Streamlit (planned).
+Pandas, Matplotlib, Streamlit.
