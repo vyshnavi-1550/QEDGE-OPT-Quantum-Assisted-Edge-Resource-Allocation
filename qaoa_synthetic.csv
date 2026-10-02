@@ -1,0 +1,4 @@
+data,num_tasks,num_servers,qubits,gap_own_problem_pct,qaoa_cost,qaoa_capacity_overflow,gap_real_world_pct,repaired_cost,repaired_overflow,gap_repaired_pct,optimal_cost,qaoa_runtime_s,exact_runtime_s
+synthetic,2,2,4,0.0,527.9,10,244.69,153.15,2,0.0,153.15,1.421,0.00478
+synthetic,3,2,6,0.0,739.06,14,1214.35,64.31,0,14.37,56.23,4.046,0.00449
+synthetic,4,2,8,0.0,947.43,18,1280.29,72.68,0,5.89,68.64,25.978,0.00694

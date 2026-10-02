@@ -117,6 +117,15 @@ def run_exact(tasks, servers, include_capacity=False):
     NumPyMinimumEigensolver. Used as ground truth to check how close QAOA
     got to the true optimum — not itself a scalable method (exponential),
     only usable because the demo scenario is intentionally small.
+
+    IMPORTANT: this returns the QUBO's own objective value (qubo_fval),
+    which includes the QUBO's penalty-based constraint handling — NOT
+    necessarily the same scoring as cost_of_assignment() used by SA/GA/
+    NSGA-II. Comparing this fval directly against a cost_of_assignment()
+    score can produce a nonsensical result (e.g. QAOA appearing to "beat"
+    the exact solution), because they are two different objective
+    functions. For an apples-to-apples ground truth against SA/GA/NSGA-II,
+    use run_exact_bruteforce() instead.
     """
     qp, qubo, converter = build_qubo(tasks, servers, include_capacity=include_capacity)
 
@@ -126,6 +135,74 @@ def run_exact(tasks, servers, include_capacity=False):
 
     assignment = decode_solution(result.x, tasks, servers, converter)
     return assignment, result.fval, runtime
+
+
+def run_exact_bruteforce(tasks, servers, include_capacity=True):
+    """
+    Find the TRUE exact optimum by exhaustively checking every possible
+    task-to-server assignment, scored by cost_of_assignment() — the exact
+    same scoring function used by SA, GA, and NSGA-II everywhere else in
+    this project.
+
+    This is the correct ground truth for QAOA comparisons, because it uses
+    the identical objective function QAOA's result is also scored with
+    (via decode_solution + cost_of_assignment), not the QUBO's own fval
+    (which includes a different, penalty-based constraint scoring — see
+    the warning in run_exact()'s docstring). Without this fix, QAOA can
+    appear to impossibly "beat" the exact solution, because it would
+    actually be being compared against the wrong objective, not a worse
+    one.
+
+    Only usable for small instances — checks num_servers ** num_tasks
+    assignments, so this is exponential and intentionally limited to the
+    same small scenarios QAOA itself is scoped to (a handful of tasks).
+
+    include_capacity: if True (default), scores every candidate with the
+    FULL cost_of_assignment() (energy cost + capacity-violation penalty) —
+    the true, real-world optimum. If False, scores with ONLY the linear
+    energy cost (no capacity penalty) — matching what QAOA's assignment-
+    only QUBO was actually asked to minimize, for an apples-to-apples
+    comparison of QAOA's solution quality on the problem it actually solved.
+
+    Use include_capacity=True for "how good is QAOA's answer in the real
+    world" (will show a large gap if QAOA's capacity-blind solution
+    overloads a server). Use include_capacity=False for "how well did QAOA
+    solve the specific problem it was given" (should be near 0%, since
+    that's the problem the QUBO actually encodes).
+
+    Returns:
+        assignment (dict): {task_id: server_id}
+        cost (float): the minimum cost under the chosen scoring
+        runtime (float)
+    """
+    import itertools
+    from simulated_annealing_solver import cost_of_assignment
+
+    num_tasks = len(tasks)
+    num_servers = len(servers)
+
+    def linear_cost(assignment):
+        server_map = {s["id"]: s for s in servers}
+        return sum(
+            t["size"] * server_map[assignment[t["id"]]]["energy_cost_per_unit"]
+            for t in tasks
+        )
+
+    score = (lambda a: cost_of_assignment(a, tasks, servers)) if include_capacity else linear_cost
+
+    t0 = time.time()
+    best_cost = float("inf")
+    best_assignment = None
+
+    for combo in itertools.product(range(num_servers), repeat=num_tasks):
+        assignment = {tasks[i]["id"]: servers[combo[i]]["id"] for i in range(num_tasks)}
+        cost = score(assignment)
+        if cost < best_cost:
+            best_cost = cost
+            best_assignment = assignment
+
+    runtime = time.time() - t0
+    return best_assignment, best_cost, runtime
 
 
 if __name__ == "__main__":
