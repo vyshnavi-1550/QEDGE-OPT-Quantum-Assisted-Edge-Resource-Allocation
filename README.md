@@ -9,32 +9,36 @@ Deciding which computing task should run on which edge server, under capacity,
 latency, and energy constraints, is a combinatorial optimization problem. This
 project builds and fairly benchmarks five approaches to it: Simulated Annealing,
 Genetic Algorithm, NSGA-II (all classical), QAOA (quantum-assisted, via Qiskit),
-and an exact MILP solver (HiGHS) used as a ground-truth optimality baseline.
+and an exact MILP solver (HiGHS via SciPy) used as a ground-truth optimality
+baseline.
 
 ## Status: Review 2, about 85% implementation
 
 Implemented, tested, and benchmarked:
 
 - `data_generator.py`: generates synthetic tasks and edge servers
-- Alibaba Cluster Trace loader: real task and server data, with a capacity floor
+- `alibaba_data_loader.py`: loads Alibaba Cluster Trace tasks and servers (with a capacity floor)
+- `real_data_loader.py`: earlier real-data loader
 - `simulated_annealing_solver.py`: classical baseline solver
 - `genetic_algorithm_solver.py`: tournament selection, single-point crossover, mutation
 - `nsga2_solver.py`: multi-objective solver (cost + latency violation), using
   non-dominated sorting and crowding distance
 - `qubo_formulation.py`: QUBO formulation built with Qiskit Optimization
   (constraints converted to penalty terms with binary-encoded slack variables)
-- `qaoa_solver.py`: QAOA on a local Qiskit simulator, with hybrid repair and a control experiment
-- Exact baseline: HiGHS MILP (OR-Tools optional) for optimality-gap measurement
-- `run_benchmark.py`: multi-size benchmark on both datasets (cost, violations,
-  runtime, scalability, optimality gap)
+- `qaoa_solver.py`: QAOA on a local Qiskit simulator, with hybrid repair
+- `qaoa_control.py`: control experiment comparing QAOA with Exact-QUBO,
+  cheapest-server and random baselines
+- `exact_baseline.py`: exact MILP baseline (SciPy/HiGHS) for optimality gaps
+- `run_benchmark.py`: multi-size benchmark (cost, violations, runtime, scalability)
 - `demo.py`: runnable demo comparing the solvers, with result charts
 
 ## How to run
 
 ```bash
-pip install matplotlib qiskit qiskit-optimization qiskit-algorithms
+pip install matplotlib qiskit qiskit-optimization qiskit-algorithms scipy
 python3 demo.py              # demo + charts
-python3 run_benchmark.py     # full multi-size benchmark, writes CSV results
+python3 run_benchmark.py     # multi-size benchmark, writes CSV results and charts
+python3 exact_baseline.py    # exact MILP baseline, writes exact_gap_*_scipy.csv
 ```
 
 `demo.py` prints the SA/GA/NSGA-II comparison on the 10-task scenario, then the
@@ -46,6 +50,17 @@ QAOA-vs-exact comparison on a smaller scenario, and saves six charts:
 - `nsga2_pareto.png`: NSGA-II's final Pareto front (cost vs. latency violation)
 - `method_comparison.png`: bar chart comparing SA/GA/NSGA-II cost
 - `qaoa_comparison.png`: bar chart comparing QAOA vs. exact solution
+
+## Result files
+
+| File | Contents |
+|---|---|
+| `benchmark_alibaba.csv`, `benchmark_synthetic.csv` | Per-dataset benchmark of Random/SA/GA/NSGA-II |
+| `benchmark_results.csv` | Latest `run_benchmark.py` run (Alibaba) |
+| `exact_gap_alibaba_scipy.csv`, `exact_gap_synthetic_scipy.csv` | Optimality gap of each heuristic vs. the exact optimum, per seed |
+| `qaoa_alibaba.csv`, `qaoa_synthetic.csv` | QAOA results, overflow, and repaired gap |
+| `qaoa_control_alibaba.csv`, `qaoa_control_synthetic.csv` | QAOA control experiment (5 seeds per size) |
+| `qaoa_results.csv` | Latest `run_benchmark.py` QAOA run |
 
 ## Solvers
 
@@ -65,9 +80,9 @@ with server load, exceeds that task's `latency_requirement`). Maintains a
 diverse Pareto front, plus a "best compromise" pick for comparison with SA/GA.
 
 ### Exact baseline (HiGHS MILP)
-Finds the true optimum of the cost objective. Used to compute each heuristic's
-optimality gap. It ignores latency, so NSGA-II's gap partly reflects cost it
-deliberately trades for lower latency.
+Finds the true optimum of the cost objective and is used to compute each
+heuristic's optimality gap. It ignores latency, so NSGA-II's gap partly
+reflects cost it deliberately trades for lower latency.
 
 ### QUBO formulation
 Expresses the assignment problem as a QUBO, the format QAOA requires, using
@@ -86,17 +101,21 @@ too large to simulate quickly. Measured runtimes:
 | 12 | did not finish in 60+ s |
 
 This is a real characteristic of NISQ-era variational algorithms, not a bug.
-QAOA is therefore run on small, assignment-only instances.
+QAOA is therefore run on small, assignment-only instances (2-4 tasks, 2 servers).
 
-- **On its own problem:** on the 3-task, 2-server scenario QAOA matched the exact
-  optimum (0.0% gap), reproducibly once the simulator and QAOA's initial
-  parameters are seeded. Without a fixed initial point the optimizer can
-  converge to different local optima, another observed property of variational
-  algorithms.
+- **On its own problem:** on the Alibaba scenarios QAOA reached the QUBO optimum
+  for 2 and 4 tasks and fell 28.3% short on the 3-task instance. A control
+  experiment over 5 seeds per size (15 runs) shows QAOA reaching the true
+  optimum after repair in 12 of 15 runs, versus 11 of 15 for both the exact
+  QUBO solution and a cheapest-server baseline. QAOA therefore matches what the
+  assignment-only formulation allows but does not outperform a trivial
+  heuristic. Without a fixed initial point the optimizer can also converge to
+  different local optima on different runs.
 - **Against the full objective:** because the QUBO encodes assignment only, QAOA
-  can overload servers. Scored with the capacity penalty, the gap is large and
-  is driven by capacity overflow, not by QAOA failing. The benchmark reports
-  both `gap_on_own_problem_pct` and `gap_real_world_pct`.
+  overloads servers (overflow of 5, 10 and 18 for 2, 3 and 4 tasks). Hybrid
+  repair removes the overflow and brings the gap to 0.0%, 14.0% and 0.0%
+  (`qaoa_alibaba.csv`). Unrepaired real-world gaps are very large (898-1531%
+  at 3-4 tasks) and are caused by capacity overflow, not by QAOA failing.
 
 ## Results
 
@@ -118,21 +137,26 @@ QAOA is therefore run on small, assignment-only instances.
 | 50 | 0.15% / 0.14% | 1.41% / 1.45% | 2.49% / 1.18% |
 | 100 | 0.26% / 0.04% | 3.84% / 2.65% | 3.84% / 2.62% |
 
+Source: `exact_gap_alibaba_scipy.csv` and `exact_gap_synthetic_scipy.csv`.
+
 Takeaways:
 
 - SA is within about 0.4% of optimal at every size.
 - GA and NSGA-II drift to about 2.6-3.8% at 100 tasks.
-- At about 100 tasks the exact solver finds the optimum in roughly 1.4-1.8 s, so
-  it is a strong baseline at these sizes. Metaheuristics earn their place mainly
-  for the multi-objective version and for larger or non-linear extensions.
+- At 100 tasks the exact solver finds the optimum in about 1.4-1.8 s on Alibaba
+  data (about 0.05-1.0 s on synthetic), so it is a strong baseline at these
+  sizes. Metaheuristics earn their place mainly for the multi-objective version
+  and for larger or non-linear extensions.
 
-### QAOA on a small 3-task scenario
+### QAOA on Alibaba scenarios (`qaoa_alibaba.csv`)
 
-| Method | Cost | Runtime |
-|---|---|---|
-| Random assignment | 76.43 | n/a |
-| QAOA (local simulator) | 39.06 | ~4-6 s |
-| Exact (ground truth) | 39.06 | ~0.01 s |
+| Tasks / Servers | Qubits | Own-problem gap | Overflow | Repaired gap | Runtime |
+|---|---|---|---|---|---|
+| 2 / 2 | 4 | 0.0% | 5 | 0.0% | ~2.1 s |
+| 3 / 2 | 6 | 28.3% | 10 | 14.02% | ~5.3 s |
+| 4 / 2 | 8 | 0.0% | 18 | 0.0% | ~24.7 s |
+
+The exact solver takes under 0.01 s on each of these instances.
 
 ## Remaining work (before Review 3)
 
@@ -146,4 +170,5 @@ Takeaways:
 
 ## Tech Stack
 
-Python, Qiskit, Qiskit Optimization, OR-Tools, HiGHS, NumPy, Pandas, Streamlit.
+Python, Qiskit, Qiskit Optimization, SciPy (HiGHS), OR-Tools (optional), NumPy,
+Pandas, Matplotlib, Streamlit (planned).
