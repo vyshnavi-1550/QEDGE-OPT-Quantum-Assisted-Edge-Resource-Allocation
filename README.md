@@ -71,20 +71,20 @@ The latest recorded python run_benchmark.py run evaluated Alibaba-derived scenar
 Tasks	Method	Mean cost	Mean latency violation	Mean capacity overflow	Mean runtime (s)
 10	Random	951.33	9.72	15.33	0.00
 10	SA	138.42	9.89	0.00	0.16
-10	GA	139.17	9.73	0.00	0.22
-10	NSGA-II	138.17	9.86	0.00	9.92
+10	GA	139.17	9.73	0.00	0.18
+10	NSGA-II	138.17	9.86	0.00	10.39
 25	Random	395.67	17.94	1.00	0.00
-25	SA	279.83	22.16	0.00	0.29
-25	GA	279.83	22.05	0.00	0.34
-25	NSGA-II	279.50	21.39	0.00	11.12
+25	SA	279.83	22.16	0.00	0.35
+25	GA	279.83	22.05	0.00	0.41
+25	NSGA-II	279.50	21.39	0.00	11.10
 50	Random	1846.04	33.52	21.00	0.00
-50	SA	612.91	41.18	0.00	0.37
-50	GA	620.55	40.72	0.00	0.41
-50	NSGA-II	627.29	38.27	0.00	8.96
+50	SA	612.91	41.18	0.00	0.61
+50	GA	620.55	40.72	0.00	0.64
+50	NSGA-II	627.29	38.27	0.00	12.41
 100	Random	1879.47	60.59	6.67	0.00
-100	SA	1144.23	86.04	0.00	0.66
-100	GA	1184.73	75.14	0.00	0.68
-100	NSGA-II	1186.13	77.14	0.00	9.95
+100	SA	1144.23	86.04	0.00	0.90
+100	GA	1184.73	75.14	0.00	1.20
+100	NSGA-II	1186.13	77.14	0.00	14.51
 
 
 Observations
@@ -94,12 +94,30 @@ Observations
 - NSGA-II runtime was much higher than SA and GA for these benchmark sizes.
 - These results apply to the tested scenarios and settings; they should not be generalized to all workloads.
 The latency violation values are the metric reported by the implementation. Use the project's documented latency model and units when interpreting or presenting them.
+7. Exact-Baseline Gap Results
+The latest exact_gap_alibaba_scipy.csv run reports the following mean and maximum optimality gaps relative to the exact baseline for Alibaba-derived scenarios. Verify that the exact and heuristic objective/constraint definitions are aligned before treating these as definitive comparisons.
+Tasks	Method	Mean gap (%)	Maximum gap (%)
+10	SA	0.41	1.24
+10	GA	1.26	2.94
+10	NSGA-II	0.39	1.16
+25	SA	0.35	0.87
+25	GA	0.30	0.89
+25	NSGA-II	0.19	0.43
+50	SA	0.15	0.46
+50	GA	1.41	2.22
+50	NSGA-II	2.49	2.92
+100	SA	0.26	0.50
+100	GA	3.84	4.51
+100	NSGA-II	3.84	4.71
+
+
+These gaps are from the latest recorded Alibaba-derived exact-baseline run and should not be mixed with older paper tables unless the data, seeds, and objective definitions match.
 7. Latest QAOA Benchmark Results
-The latest qaoa_results.csv contains three Alibaba-derived instances with two servers.
+The latest qaoa_results.csv contains three Alibaba-derived instances with two servers. Runtime values below are from the latest recorded run; simulator runtimes can vary with the environment and optimization process.
 Tasks / Servers	Qubits	Own-problem gap	Un-repaired capacity overflow	Full-objective gap	Repaired overflow	Repaired gap	QAOA runtime (s)
-2 / 2	4	0.00%	5	970.00%	0	0.00%	1.516
-3 / 2	6	28.30%	10	898.13%	0	14.02%	4.231
-4 / 2	8	0.00%	18	1531.58%	0	0.00%	23.431
+2 / 2	4	0.00%	5	970.00%	0	0.00%	3.031
+3 / 2	6	28.30%	10	898.13%	0	14.02%	10.455
+4 / 2	8	0.00%	18	1531.58%	0	0.00%	53.543
 
 
 Interpretation
@@ -138,7 +156,7 @@ method_comparison.png	Classical method comparison chart
 qaoa_comparison.png	QAOA/exact comparison chart
 
 
-Some files listed above are from earlier runs. Check file timestamps and regenerate outputs before using them in a final paper.
+Some files listed above may be from earlier runs. Check file timestamps and regenerate outputs before using them in a final paper. In particular, make sure the paper tables, dashboard, and README all use the same CSV run and objective definitions.
 11. Limitations
 - QAOA currently omits capacity constraints from its QUBO by default and relies on classical repair.
 - QAOA is benchmarked on 2–4 tasks and 2 servers, while classical methods are tested on larger instances.
